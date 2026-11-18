@@ -1,0 +1,28 @@
+*.iml
+.gradle
+/local.properties
+local.properties
+/.idea
+/.kotlin
+.DS_Store
+/build
+/app/build
+/captures
+.externalNativeBuild
+.cxx
+
+# Personal files kept out of the public repo
+*.xlsx
+*.xls
+*.csv
+/Bank_Statement_Analyzer.html
+/app/src/main/assets/
+
+# Builds are published as GitHub Releases, not committed
+*.apk
+*.aab
+
+# Signing secrets
+*.jks
+*.keystore
+keystore.properties
