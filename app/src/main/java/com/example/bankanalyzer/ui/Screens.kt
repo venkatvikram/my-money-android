@@ -4,6 +4,7 @@ package com.example.bankanalyzer.ui
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -175,10 +176,12 @@ fun HomeScreen(
                     ) { onAssetClick(a) }
                 }
                 Spacer(Modifier.height(8.dp))
-                Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                    OutlinedButton(onClick = { onAddAsset("MF") }) { Text("+ Mutual fund", fontSize = 12.sp) }
-                    OutlinedButton(onClick = { onAddAsset("GOLD") }) { Text("+ Gold", fontSize = 12.sp) }
-                    OutlinedButton(onClick = { onAddAsset("OTHER") }) { Text("+ Other", fontSize = 12.sp) }
+                // Equal widths so all three fit on small phones too.
+                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                    val pad = PaddingValues(horizontal = 4.dp, vertical = 8.dp)
+                    OutlinedButton(onClick = { onAddAsset("MF") }, Modifier.weight(1f), contentPadding = pad) { Text("+ Fund", fontSize = 12.sp, maxLines = 1) }
+                    OutlinedButton(onClick = { onAddAsset("GOLD") }, Modifier.weight(1f), contentPadding = pad) { Text("+ Gold", fontSize = 12.sp, maxLines = 1) }
+                    OutlinedButton(onClick = { onAddAsset("OTHER") }, Modifier.weight(1f), contentPadding = pad) { Text("+ Other", fontSize = 12.sp, maxLines = 1) }
                 }
             }
         }

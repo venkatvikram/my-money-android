@@ -27,7 +27,7 @@ object StatementParser {
         if (b.size >= 4 && String(b, 0, 4) == "%PDF")
             throw StatementException("PDF statements can't be read offline. Download the statement as Excel or CSV from your bank's net banking instead.")
         var text = String(b, Charsets.UTF_8)
-        if (text.startsWith("﻿")) text = text.substring(1)
+        if (text.isNotEmpty() && text[0].code == 0xFEFF) text = text.substring(1)
         if (Regex("<t[rd][\\s>]", RegexOption.IGNORE_CASE).containsMatchIn(text)) return readHtml(text)
         return readDelimited(text)
     }

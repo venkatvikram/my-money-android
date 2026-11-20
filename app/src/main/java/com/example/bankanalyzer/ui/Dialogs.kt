@@ -9,8 +9,8 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Checkbox
@@ -63,8 +63,10 @@ fun CategoryDialog(
                     label = { Text("New category (e.g. Shop, Milk, Tuition)") }, modifier = Modifier.fillMaxWidth()
                 )
                 Spacer(Modifier.height(6.dp))
-                LazyColumn(Modifier.heightIn(max = 260.dp)) {
-                    items(options) { o ->
+                // A plain scrolling Column, NOT LazyColumn: AlertDialog measures its content with
+                // intrinsic sizes, which lazy lists don't support (that crashed the app on every phone).
+                Column(Modifier.heightIn(max = 260.dp).verticalScroll(rememberScrollState())) {
+                    options.forEach { o ->
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             RadioButton(selected = custom.isBlank() && chosen == o, onClick = { chosen = o; custom = "" })
                             Text(o, fontSize = 14.sp)
@@ -105,7 +107,7 @@ fun AccountDialog(
             Column {
                 Text("What is this account?", fontSize = 13.sp)
                 Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                    FilterChip(type == "bank", { type = "bank" }, { Text("Bank account") })
+                    FilterChip(type == "bank", { type = "bank" }, { Text("Bank") })
                     FilterChip(type == "card", { type = "card" }, { Text("Credit card") })
                     FilterChip(type == "hide", { type = "hide" }, { Text("Hide") })
                 }

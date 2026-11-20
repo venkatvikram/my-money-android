@@ -19,6 +19,7 @@ object SmsReader {
             "date DESC"
         ) ?: return emptyList()
         cursor.use { c ->
+            if (c.getColumnIndex("address") < 0 || c.getColumnIndex("body") < 0 || c.getColumnIndex("date") < 0) return emptyList()
             val iA = c.getColumnIndex("address")
             val iB = c.getColumnIndex("body")
             val iD = c.getColumnIndex("date")
@@ -26,7 +27,8 @@ object SmsReader {
                 val sender = c.getString(iA) ?: continue
                 val body = c.getString(iB) ?: continue
                 if (!SmsParser.looksLikeBankSender(sender)) continue
-                SmsParser.parse(sender, body, c.getLong(iD))?.let(out::add)
+                // One unusual message must never stop the rest from loading.
+                try { SmsParser.parse(sender, body, c.getLong(iD))?.let(out::add) } catch (_: Exception) { }
             }
         }
         return dedupe(out)

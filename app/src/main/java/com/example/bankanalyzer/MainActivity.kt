@@ -15,7 +15,18 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.TextButton
+import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
@@ -105,6 +116,7 @@ fun MoneyApp(resumeTick: Int) {
     var stmtBusy by remember { mutableStateOf(false) }
 
     // Dialogs
+    var crashReport by remember { mutableStateOf(CrashReporter.pending(ctx)) }
     var catTxn by remember { mutableStateOf<Txn?>(null) }
     var acctDialog by remember { mutableStateOf<String?>(null) }
     var assetEdit by remember { mutableStateOf<Pair<Asset, Boolean>?>(null) }
@@ -232,6 +244,36 @@ fun MoneyApp(resumeTick: Int) {
                 types = store.accountTypes(); manual = store.manualBalances(); acctDialog = null
             },
             onDismiss = { acctDialog = null }
+        )
+    }
+
+    crashReport?.let { report ->
+        AlertDialog(
+            onDismissRequest = { CrashReporter.clear(ctx); crashReport = null },
+            title = { Text("My Money closed unexpectedly") },
+            text = {
+                Column(Modifier.heightIn(max = 320.dp).verticalScroll(rememberScrollState())) {
+                    Text(
+                        "Sorry about that. You can share this report with the developer so it can be fixed. " +
+                            "It contains only technical details (phone model, Android version, error), no SMS or money data.",
+                        fontSize = 13.sp
+                    )
+                    Spacer(Modifier.height(8.dp))
+                    Text(report, fontSize = 10.sp, fontFamily = FontFamily.Monospace)
+                }
+            },
+            confirmButton = {
+                TextButton(onClick = {
+                    val send = Intent(Intent.ACTION_SEND).apply {
+                        type = "text/plain"
+                        putExtra(Intent.EXTRA_SUBJECT, "My Money crash report")
+                        putExtra(Intent.EXTRA_TEXT, report)
+                    }
+                    try { ctx.startActivity(Intent.createChooser(send, "Share crash report")) } catch (_: Exception) { }
+                    CrashReporter.clear(ctx); crashReport = null
+                }) { Text("Share report") }
+            },
+            dismissButton = { TextButton(onClick = { CrashReporter.clear(ctx); crashReport = null }) { Text("Close") } }
         )
     }
 

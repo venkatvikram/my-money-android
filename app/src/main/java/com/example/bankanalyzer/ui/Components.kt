@@ -117,7 +117,7 @@ fun BarList(
             Text(name, Modifier.weight(0.38f), fontSize = 13.sp, maxLines = 1, overflow = TextOverflow.Ellipsis, fontWeight = if (sel) FontWeight.Bold else null)
             Box(Modifier.weight(0.30f).padding(horizontal = 6.dp)) {
                 Box(
-                    Modifier.fillMaxWidth((v / maxV).toFloat().coerceIn(0.02f, 1f)).height(12.dp)
+                    Modifier.fillMaxWidth(safeFraction(v, maxV)).height(12.dp)
                         .background(color, RoundedCornerShape(3.dp))
                 )
             }
@@ -132,7 +132,7 @@ fun BarList(
 fun MonthChart(months: List<MonthFlow>) {
     if (months.isEmpty()) { Text("No data yet.", fontSize = 13.sp); return }
     val cin = inColor(); val cout = outColor()
-    val maxV = months.maxOf { maxOf(it.inAmt, it.outAmt) }.coerceAtLeast(1.0)
+    val maxV = months.maxOf { maxOf(it.inAmt, it.outAmt) }.takeIf { it.isFinite() }?.coerceAtLeast(1.0) ?: 1.0
     Row(verticalAlignment = Alignment.CenterVertically) {
         Box(Modifier.size(10.dp).background(cin)); Text(" In   ", fontSize = 12.sp)
         Box(Modifier.size(10.dp).background(cout)); Text(" Out", fontSize = 12.sp)
@@ -256,4 +256,10 @@ fun Dashboard(k: Kpis, txns: List<Txn>, onTxnClick: (Txn) -> Unit) = Column {
     Section("Money in vs out by month") { MonthChart(k.months) }
     Section("Top payees") { if (k.payees.isEmpty()) Text("—", fontSize = 13.sp) else BarList(k.payees, 0.0, MaterialTheme.colorScheme.tertiary) }
     k.biggestExpense?.let { b -> Section("Largest single expense") { TxnRow(b, onClick = onTxnClick) } }
+}
+
+/** Bar length in 0.02..1, never NaN/infinite (which would crash layout on some data). */
+private fun safeFraction(v: Double, max: Double): Float {
+    val f = if (max > 0 && v.isFinite()) (v / max).toFloat() else 0f
+    return if (f.isNaN()) 0.02f else f.coerceIn(0.02f, 1f)
 }
